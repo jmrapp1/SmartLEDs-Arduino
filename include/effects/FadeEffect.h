@@ -18,7 +18,7 @@ public:
 
 private:
     bool _downFade = true;
-    byte _lastBrightness = 0;
+    float _lastBrightness = 0;
     byte _minBrightness = 0;
     byte _maxBrightness = 0;
     byte _delay = 5;

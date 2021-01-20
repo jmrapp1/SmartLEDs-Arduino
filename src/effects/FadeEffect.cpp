@@ -33,8 +33,13 @@ void FadeEffect::onCmd(char **nextCmd, int numLeds, CRGB *leds) {
         Helpers::parseNum(&_maxBrightness, nextCmd[4]);
         Helpers::parseNum(&_delay, nextCmd[5]);
         if (_delay <= 0) _delay = 1;
-        if (_minBrightness <= 0) _delay = 0;
-        if (_maxBrightness > 255) _delay = 255;
+        if (_minBrightness <= 0) _minBrightness = 0;
+        if (_maxBrightness > 255) _maxBrightness = 255;
+        _minBrightness = Helpers::clampColor(_minBrightness);
+        _maxBrightness = Helpers::clampColor(_maxBrightness);
+        Serial.println(_minBrightness);
+        Serial.println(_maxBrightness);
+        Serial.println(_delay);
     } else if (strcmp(nextCmd[2], "off") == 0) {
         _stateService.setState("IDLE", 4);
     } else if (strcmp(nextCmd[2], "c") == 0) { // c for color
