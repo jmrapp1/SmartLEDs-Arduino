@@ -4,6 +4,7 @@
 
 #include <Arduino.h>
 #include <FastLED.h>
+#include <./utils/Helpers.h>
 
 #define MAX_BRIGHTNESS 204
 #define MAX_BRIGHTNESS_PERCENT MAX_BRIGHTNESS / 255
@@ -17,9 +18,6 @@ public:
 private:
     int _numLeds;
     CRGB *_leds;
-
-    void parseNum(byte *out, char *s);
-    byte clampColor(byte color);
 };
 
 #endif //LUMEN_LIGHTSERVICE_H

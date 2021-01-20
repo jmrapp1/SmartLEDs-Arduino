@@ -30,4 +30,4 @@ add_custom_target(
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-add_executable(Z_DUMMY_TARGET ${SRC_LIST} src/RfService.cpp include/StateService.h src/StateService.cpp include/effects/TwinkleEffect.h src/effects/TwinkleEffect.cpp include/LightService.h src/LightService.cpp)
+add_executable(Z_DUMMY_TARGET ${SRC_LIST} src/RfService.cpp include/StateService.h src/StateService.cpp include/effects/TwinkleEffect.h src/effects/TwinkleEffect.cpp include/LightService.h src/LightService.cpp include/effects/Effect.h src/effects/Effect.cpp src/effects/FadeEffect.cpp include/utils/Helpers.h src/utils/Helpers.cpp)

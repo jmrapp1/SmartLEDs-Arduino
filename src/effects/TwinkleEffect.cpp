@@ -1,4 +1,5 @@
 #include <effects/TwinkleEffect.h>
+#include <StateService.h>
 
 #define SKIP_PIXEL false
 #define SKIP_PIXEL_AMOUNT 1
@@ -6,13 +7,15 @@
 #define LED_LIMIT_HIGH 204
 #define LED_LIMIT_LOW 0
 
-TwinkleEffect::TwinkleEffect(int numLeds) {
+TwinkleEffect::TwinkleEffect(StateService &stateService, LightService &lightService, int numLeds) : Effect(stateService,
+                                                                                                         lightService) {
     _ledDownFades = static_cast<bool *>(malloc(numLeds * sizeof(bool)));
 }
 
-void TwinkleEffect::setup(int numLeds, CRGB leds[]) {
+void TwinkleEffect::setup(int numLeds, CRGB *leds) {
     for (int i = 0; i < numLeds; i++) {
         _ledDownFades[i] = false;
+        leds[i] = CRGB(0, 0, 0);
     }
     FastLED.show();
     delay(2000);
@@ -36,8 +39,8 @@ void TwinkleEffect::loop(int numLeds, CRGB *leds) {
 
     for (int i = 0; i < numLeds; i++) {
         if (SKIP_PIXEL && i % SKIP_PIXEL_AMOUNT != 0) {
-             leds[i] = CRGB::Black;
-             continue;
+            leds[i] = CRGB::Black;
+            continue;
         }
         twinkleLed(&leds[i], i);
     }
@@ -63,5 +66,16 @@ void TwinkleEffect::twinkleLed(CRGB *led, int index) {
         *led -= CRGB(1, 1, 1);
     } else {
         *led += CRGB(1, 1, 1);
+    }
+}
+
+void TwinkleEffect::onCmd(char **nextCmd, int numLeds, CRGB *leds) {
+    if (strcmp(nextCmd[2], "on") == 0) {
+        _stateService.setState("TWINKLE", 7);
+        setup(numLeds, leds);
+    } else if (strcmp(nextCmd[2], "off") == 0) {
+        _stateService.setState("IDLE", 4);
+    } else if (_stateService.isStateEqualTo("TWINKLE")) {
+        setup(numLeds, leds);
     }
 }

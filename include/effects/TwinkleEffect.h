@@ -4,14 +4,18 @@
 
 #include <Arduino.h>
 #include <FastLED.h>
+#include <StateService.h>
+#include <LightService.h>
+#include "Effect.h"
 
-class TwinkleEffect {
+class TwinkleEffect: public Effect {
 public:
-    TwinkleEffect(int numLeds);
-    void setup(int numLeds, CRGB *leds);
+    explicit TwinkleEffect(StateService &stateService, LightService &lightService, int numLeds);
+    void setup(int numLeds, CRGB *leds) override;
+    void loop(int numLeds, CRGB *leds) override;
+    void onCmd(char **nextCmd, int numLeds, CRGB *leds) override;
     void startLed(CRGB *led);
     void twinkleLed(CRGB *led, int index);
-    void loop(int numLeds, CRGB *leds);
 
 private:
     bool *_ledDownFades;
