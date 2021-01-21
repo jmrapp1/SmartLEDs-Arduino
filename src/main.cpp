@@ -48,6 +48,7 @@ void handleNextCmd(char** nextCmd) {
     if (strcmp(cmd, "on") == 0) {
         FastLED.setBrightness(MAX_BRIGHTNESS);
     } else if (strcmp(cmd, "off") == 0) {
+        stateService.setState("IDLE", 4);
         FastLED.setBrightness(0);
     } else if (strcmp(cmd, "set") == 0) {
         char *type = nextCmd[1];

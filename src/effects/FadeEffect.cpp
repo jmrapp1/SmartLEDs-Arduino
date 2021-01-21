@@ -20,7 +20,7 @@ void FadeEffect::loop(int numLeds, CRGB *leds) {
         _lastBrightness += 1;
         FastLED.setBrightness(_lastBrightness);
     }
-    delay(_delay);
+    FastLED.delay(_delay);
 }
 
 void FadeEffect::onCmd(char **nextCmd, int numLeds, CRGB *leds) {
