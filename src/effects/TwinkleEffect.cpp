@@ -51,34 +51,20 @@ void TwinkleEffect::setup(int numLeds, CRGB *leds) {
         _ledSteps[i] = 0;
         leds[i] = CRGB(0, 0, 0);
     }
-    double highest = max(_targetR, max(_targetG, _targetB));
-    double rC = (double)_targetR / highest;
-    double gC = (double)_targetG / highest;
-    double bC = (double)_targetB / highest;
+    double steps = max(_targetR, max(_targetG, _targetB));
+    double rC = (double)_targetR / steps;
+    double gC = (double)_targetG / steps;
+    double bC = (double)_targetB / steps;
 
-    double min = min(rC, min(gC, bC));
-    if (min <= 0) min = 1;
-
-    double scalar = 1 / min;
-    _rChange = (byte) lround(max(scalar * rC, 255));
-    _gChange = (byte) lround(max(scalar * gC, 255));
-    _bChange = (byte) lround(max(scalar * bC, 255));
+    _rStep = rC > 0 ? (byte) lround(1 / rC) : 0;
+    _gStep = gC > 0 ? (byte) lround(1 / gC) : 0;
+    _bStep = bC > 0 ? (byte) lround(1 / bC) : 0;
 
     _minR = (_targetR > 0 ? 1 : 0);
     _minG = (_targetG > 0 ? 1 : 0);
     _minB = (_targetB > 0 ? 1 : 0);
 
-    Serial.println(_minR);
-    Serial.println(_minG);
-    Serial.println(_minB);
-    Serial.println("");
-    Serial.println(_rChange);
-    Serial.println(_bChange);
-    Serial.println(_gChange);
-    Serial.println("");
-
     FastLED.show();
-    delay(2000);
     _ledsStarted = 0;
     _nextStartDelay = 0;
 }
@@ -87,8 +73,8 @@ void TwinkleEffect::loop(int numLeds, CRGB *leds) {
     if (_ledsStarted < numLeds) {
         EVERY_N_MILLIS(_nextStartDelay) {
             byte next = random(numLeds);
-            if (!isLedStarted(&leds[next])) { // if not lit
-                startLed(&leds[next]);
+            if (!isLedStarted(next)) { // if not lit
+                startLed(&leds[next], next);
                 _ledsStarted++;
                 _nextStartDelay = random(500, 1500);
             } else {
@@ -107,39 +93,33 @@ void TwinkleEffect::loop(int numLeds, CRGB *leds) {
     delay(FADE_DELAY);
 }
 
-void TwinkleEffect::startLed(CRGB *led) {
+void TwinkleEffect::startLed(CRGB *led, byte index) {
     *led = CRGB(_minR, _minG, _minB);
     _ledSteps[index] = 1;
 }
 
 void TwinkleEffect::twinkleLed(CRGB *led, int index) {
-    if (!isLedStarted(led)) { // if not lit
-        return; // not started
+    if (!isLedStarted(index)) { // if not lit
+        return;
     }
 
     if (!_ledDownFades[index] && (*led).r >= _targetR && (*led).g >= _targetG && (*led).b >= _targetB) {
         _ledDownFades[index] = true;
+        _ledSteps[index] = 1;
     } else if (_ledDownFades[index] && (*led).r <= _minR && (*led).g <= _minG && (*led).b <= _minB) {
         _ledDownFades[index] = false;
+        _ledSteps[index] = 1;
     }
 
     byte newR = (*led).r, newG = (*led).g, newB = (*led).b;
     if (_ledDownFades[index]) {
-        if ((*led).r > _minR) Helpers::subWithoutOverflow(&newR, (*led).r, _rChange);
-        if ((*led).g > _minG) Helpers::subWithoutOverflow(&newG, (*led).g, _gChange);
-        if ((*led).b > _minB) Helpers::subWithoutOverflow(&newB, (*led).b, _bChange);
+        if (_ledSteps[index] % _rStep == 0 && (*led).r > _minR) Helpers::subWithoutOverflow(&newR, (*led).r, 1);
+        if (_ledSteps[index] % _gStep == 0 && (*led).g > _minG) Helpers::subWithoutOverflow(&newG, (*led).g, 1);
+        if (_ledSteps[index] % _bStep == 0 && (*led).b > _minB) Helpers::subWithoutOverflow(&newB, (*led).b, 1);
     } else {
-        if ((*led).r < _targetR) Helpers::addWithoutOverflow(&newR, (*led).r, _rChange);
-        if ((*led).g < _targetG) Helpers::addWithoutOverflow(&newG, (*led).g, _gChange);
-        if ((*led).b < _targetB) Helpers::addWithoutOverflow(&newB, (*led).b, _bChange);
-    }
-    if (index == 1) {
-        Serial.print("R ");
-        Serial.println(newR);
-        Serial.print("G ");
-        Serial.println(newG);
-        Serial.print("B ");
-        Serial.println(newB);
+        if (_ledSteps[index] % _rStep == 0 && (*led).r < _targetR) Helpers::addWithoutOverflow(&newR, (*led).r, 1);
+        if (_ledSteps[index] % _gStep == 0 && (*led).g < _targetG) Helpers::addWithoutOverflow(&newG, (*led).g, 1);
+        if (_ledSteps[index] % _bStep == 0 && (*led).b < _targetB) Helpers::addWithoutOverflow(&newB, (*led).b, 1);
     }
     (*led).r = constrain(newR, _minR, _targetR);
     (*led).g = constrain(newG, _minG, _targetG);
@@ -147,8 +127,8 @@ void TwinkleEffect::twinkleLed(CRGB *led, int index) {
     _ledSteps[index] += 1;
 }
 
-bool TwinkleEffect::isLedStarted(CRGB *led) {
-    return !((*led).r == 0 && (*led).g == 0 && (*led).b == 0);
+bool TwinkleEffect::isLedStarted(byte index) {
+    return _ledSteps[index];
 }
 
 void TwinkleEffect::onCmd(char **nextCmd, int numLeds, CRGB *leds) {
