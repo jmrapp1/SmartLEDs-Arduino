@@ -2,7 +2,7 @@
 #include <effects/FadeEffect.h>
 
 void FadeEffect::setup(int numLeds, CRGB *leds) {
-    _lastBrightness = Helpers::clampColor(255);
+    _lastBrightness = _maxBrightness;
     FastLED.setBrightness(_lastBrightness);
 }
 
@@ -37,12 +37,11 @@ void FadeEffect::onCmd(char **nextCmd, int numLeds, CRGB *leds) {
         if (_maxBrightness > 255) _maxBrightness = 255;
         _minBrightness = Helpers::clampColor(_minBrightness);
         _maxBrightness = Helpers::clampColor(_maxBrightness);
-        Serial.println(_minBrightness);
-        Serial.println(_maxBrightness);
-        Serial.println(_delay);
     } else if (strcmp(nextCmd[2], "off") == 0) {
         _stateService.setState("IDLE", 4);
-    } else if (strcmp(nextCmd[2], "c") == 0) { // c for color
-        _lightService.setColor(nextCmd[3], nextCmd[4], nextCmd[5]);
+    } else if (_stateService.isStateEqualTo("FADE")) {
+        if (strcmp(nextCmd[2], "c") == 0) { // c for color
+            _lightService.setColor(nextCmd[3], nextCmd[4], nextCmd[5]);
+        }
     }
 }

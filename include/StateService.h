@@ -9,6 +9,7 @@ public:
     char *getState();
     bool isStateEqualTo(const char *c);
     void setState(const char *state, byte length);
+    void clearState();
 
 private:
     char _state[16] = {};
